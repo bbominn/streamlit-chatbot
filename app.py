@@ -1,5 +1,7 @@
 import streamlit as st
 from google import genai
+from google.genai import types
+
 
 import os
 from dotenv import load_dotenv
@@ -28,29 +30,21 @@ if "chat_session" not in st.session_state:
 
 
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+for content in st.session_state.chat_session.get_history():
+    role = "ai"if content.role == "model" else "user"
+    with st.chat_message(content.role):
+        for part in content.parts:
+            if part.text:
+                st.write(part.text)
 
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
-
-if prompt:= st.chat_input("에코봇에게 물어보기"):
+if prompt:= st.chat_input("챗봇에게 물어보기"):
     with st.chat_message("user"):
         st.write(prompt)
-        st.session_state.messages.append({
-                "role": "user",
-                "content": prompt
-            })
+        
 
     with st.chat_message("ai"):
         response = st.session_state.chat_session.send_message(prompt)
 
         st.write(response.text)
-        message = {
-            "role": "ai",
-            "content": response.text
-        }
-        st.session_state.messages.append(message)
+       
